@@ -25,30 +25,35 @@ if (args && args[2] && (args[2] === 'init' || args[2] === 'build')) {
         copyFile(path.resolve(__dirname, '.deployment'), path.resolve(currentFolder + '/.deployment'));
         copyFile(path.resolve(__dirname, 'deploy.sh'), path.resolve(currentFolder + '/deploy.sh'));
     } else if (args[2] === 'build') {
-        var execPath = path.resolve('node_modules', 'ember-cli', 'bin'),
-            cp, captureOutput;
+		
+		if(args[3] && (args[3] === 'test' || args[3] === 'production')) {		
+			var execPath = path.resolve('node_modules', 'ember-cli', 'bin'),
+				cp, captureOutput;
 
-        console.log('Executing "ember build -prod". This might take a while.');
+			console.log('Executing "ember build -e ' + args[3] + '" . This might take a while.');
 
-        cp = exec('node ' + execPath + '\\ember build -prod', {
-            cwd: currentFolder,
-            stdout: true,
-            stdin: false
-        }, function (err, stdout, stderr) {
-            if (err) {
-                return console.error(err);
-            }
-            console.log(stdout, stderr);
-        }.bind(this));
+			cp = exec('node ' + execPath + '\\ember build -e ' + args[3], {
+				cwd: currentFolder,
+				stdout: true,
+				stdin: false
+			}, function (err, stdout, stderr) {
+				if (err) {
+					return console.error(err);
+				}
+				console.log(stdout, stderr);
+			}.bind(this));
 
-        captureOutput = function (child, output) {
-            child.on('data', function (data) {
-                output.write(chalk.stripColor(data));
-            });
-        };
+			captureOutput = function (child, output) {
+				child.on('data', function (data) {
+					output.write(chalk.stripColor(data));
+				});
+			};
 
-        captureOutput(cp.stdout, process.stdout);
-        captureOutput(cp.stderr, process.stderr);
+			captureOutput(cp.stdout, process.stdout);
+			captureOutput(cp.stderr, process.stderr);
+		} else {
+			console.error('Invalid ember CLI build argument ' + args[3]);
+		}
     }
 } else {
     console.error('No parameter given! Usage deploy [init|build]');
